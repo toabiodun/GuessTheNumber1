@@ -147,10 +147,10 @@ namespace WindowsFormsApp4
             // btnMessage
             // 
             this.btnMessage.Enabled = false;
-            this.btnMessage.Location = new System.Drawing.Point(160, 369);
+            this.btnMessage.Location = new System.Drawing.Point(160, 343);
             this.btnMessage.Margin = new System.Windows.Forms.Padding(4);
             this.btnMessage.Name = "btnMessage";
-            this.btnMessage.Size = new System.Drawing.Size(267, 37);
+            this.btnMessage.Size = new System.Drawing.Size(267, 63);
             this.btnMessage.TabIndex = 9;
             // 
             // btnNew

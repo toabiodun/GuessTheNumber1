@@ -6,7 +6,6 @@ namespace WindowsFormsApp4
 {
     public partial class Form1 : Form
     {
-        // Random number, number of attempts, and random generator
         private int secret;
         private int attempts;
         private readonly Random rng = new Random();
@@ -14,8 +13,8 @@ namespace WindowsFormsApp4
         public Form1()
         {
             InitializeComponent();
-            InitUi();       // Set initial look and enabled states
-            WireEvents();   // Attach all the button/slider event handlers
+            InitUi();
+            WireEvents();
         }
 
         // ===============================
@@ -23,7 +22,7 @@ namespace WindowsFormsApp4
         // ===============================
         private void InitUi()
         {
-            // TrackBars for minimum and maximum values
+            // Range sliders
             tbMin.Minimum = 1;
             tbMin.Maximum = 99;
             tbMin.Value = 1;
@@ -32,28 +31,28 @@ namespace WindowsFormsApp4
             tbMax.Maximum = 100;
             tbMax.Value = 100;
 
-            // Guess TrackBar setup
+            // Guess slider follows range; disabled until Start
             tbGuess.Minimum = tbMin.Value;
             tbGuess.Maximum = tbMax.Value;
             tbGuess.Value = tbMin.Value;
-            tbGuess.Enabled = false; // disabled until Start is pressed
+            tbGuess.Enabled = false;
 
-            // Buttons setup
+            // Buttons
             btnStart.Enabled = true;
             btnGuess.Enabled = false;
-            btnMessage.Enabled = false;   // used as message display only
+            btnMessage.Enabled = false;        // used as a label
             btnMessage.Text = "";
             btnMessage.BackColor = SystemColors.Control;
             btnMessage.ForeColor = Color.White;
 
-            // NumericUpDown setup
+            // NumericUpDown mirrors the current maximum
             numRange.Minimum = 1;
             numRange.Maximum = 100;
-            numRange.Value = 100;
+            numRange.Value = tbMax.Value;
 
             attempts = 0;
 
-            // Display starting values
+            // Display starting numbers
             PutNumber(rtbMin, tbMin.Value);
             PutNumber(rtbMax, tbMax.Value);
             PutNumber(rtbGuess, tbGuess.Value);
@@ -61,7 +60,7 @@ namespace WindowsFormsApp4
             tbMin.Enabled = tbMax.Enabled = true;
         }
 
-        // Helper: show a number in a RichTextBox (centered and bold)
+        // Helper: show centered big number in RichTextBox
         private void PutNumber(RichTextBox box, int value)
         {
             box.Text = value.ToString();
@@ -71,11 +70,11 @@ namespace WindowsFormsApp4
         }
 
         // ===============================
-        //          EVENT WIRING
+        //            EVENTS
         // ===============================
         private void WireEvents()
         {
-            // TrackBar: Minimum value changed
+            // MIN slider
             tbMin.Scroll += (s, e) =>
             {
                 if (tbMin.Value >= tbMax.Value)
@@ -89,7 +88,7 @@ namespace WindowsFormsApp4
                 PutNumber(rtbGuess, tbGuess.Value);
             };
 
-            // TrackBar: Maximum value changed
+            // MAX slider (also keeps NumericUpDown in sync)
             tbMax.Scroll += (s, e) =>
             {
                 if (tbMax.Value <= tbMin.Value)
@@ -99,22 +98,55 @@ namespace WindowsFormsApp4
                 if (tbGuess.Value > tbGuess.Maximum)
                     tbGuess.Value = tbGuess.Maximum;
 
+                // keep NumericUpDown synced with the max
+                if (numRange.Value != tbMax.Value)
+                {
+                    // clamp inside its allowed range first
+                    var v = Math.Max((int)numRange.Minimum, Math.Min((int)numRange.Maximum, tbMax.Value));
+                    numRange.Value = v;
+                }
+
                 PutNumber(rtbMax, tbMax.Value);
                 PutNumber(rtbGuess, tbGuess.Value);
             };
 
-            // TrackBar: Guess value changed
+            // GUESS slider
             tbGuess.Scroll += (s, e) =>
             {
                 PutNumber(rtbGuess, tbGuess.Value);
             };
 
-            // Start button
+            // NUMERIC UP/DOWN → updates MAX & displays (two-way binding)
+            numRange.ValueChanged += (s, e) =>
+            {
+                int newMax = (int)numRange.Value;
+
+                // Ensure newMax is always > min
+                if (newMax <= tbMin.Value)
+                {
+                    newMax = tbMin.Value + 1;
+                    numRange.Value = newMax; // reflect corrected value
+                }
+
+                // Update Max slider range/value and displays
+                tbMax.Maximum = Math.Max(tbMax.Maximum, newMax); // make sure we can set Value
+                tbMax.Value = newMax;
+
+                tbGuess.Maximum = newMax;
+                if (tbGuess.Value > newMax)
+                    tbGuess.Value = newMax;
+
+                PutNumber(rtbMax, newMax);
+                PutNumber(rtbGuess, tbGuess.Value);
+            };
+
+            // START
             btnStart.Click += (s, e) =>
             {
                 tbMin.Enabled = tbMax.Enabled = false;
                 tbGuess.Enabled = true;
                 btnGuess.Enabled = true;
+                btnStart.Enabled = false;
 
                 secret = rng.Next(tbMin.Value, tbMax.Value + 1);
                 attempts = 0;
@@ -123,18 +155,18 @@ namespace WindowsFormsApp4
                 btnMessage.BackColor = SystemColors.ControlDark;
             };
 
-            // Guess button
+            // GUESS
             btnGuess.Click += (s, e) =>
             {
                 attempts++;
-                int guess = tbGuess.Value;
+                int g = tbGuess.Value;
 
-                if (guess < secret)
+                if (g < secret)
                 {
                     btnMessage.Text = "The number is higher!";
                     btnMessage.BackColor = Color.Red;
                 }
-                else if (guess > secret)
+                else if (g > secret)
                 {
                     btnMessage.Text = "The number is lower!";
                     btnMessage.BackColor = Color.RoyalBlue;
@@ -147,10 +179,11 @@ namespace WindowsFormsApp4
                     tbGuess.Enabled = false;
                     btnGuess.Enabled = false;
                     tbMin.Enabled = tbMax.Enabled = true;
+                    btnStart.Enabled = true;
                 }
             };
 
-            // New / Reset button
+            // NEW / RESET
             btnNew.Click += (s, e) => InitUi();
         }
     }

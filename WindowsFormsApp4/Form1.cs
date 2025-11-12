@@ -37,18 +37,19 @@ namespace WindowsFormsApp4
             tbGuess.Value = tbMin.Value;
             tbGuess.Enabled = false;
 
-            // Buttons
+            // Buttons / message
             btnStart.Enabled = true;
             btnGuess.Enabled = false;
-            btnMessage.Enabled = false;        // used as a label
+            btnMessage.Enabled = false;             // used as a label
             btnMessage.Text = "";
             btnMessage.BackColor = SystemColors.Control;
             btnMessage.ForeColor = Color.White;
 
-            // NumericUpDown mirrors the current maximum
+            // NumericUpDown mirrors the current maximum (and is editable before Start)
             numRange.Minimum = 1;
             numRange.Maximum = 100;
             numRange.Value = tbMax.Value;
+            numRange.Enabled = true;               // ← editable before the game
 
             attempts = 0;
 
@@ -57,6 +58,7 @@ namespace WindowsFormsApp4
             PutNumber(rtbMax, tbMax.Value);
             PutNumber(rtbGuess, tbGuess.Value);
 
+            // Range controls editable before Start
             tbMin.Enabled = tbMax.Enabled = true;
         }
 
@@ -88,7 +90,7 @@ namespace WindowsFormsApp4
                 PutNumber(rtbGuess, tbGuess.Value);
             };
 
-            // MAX slider (also keeps NumericUpDown in sync)
+            // MAX slider (keeps NumericUpDown in sync)
             tbMax.Scroll += (s, e) =>
             {
                 if (tbMax.Value <= tbMin.Value)
@@ -98,11 +100,10 @@ namespace WindowsFormsApp4
                 if (tbGuess.Value > tbGuess.Maximum)
                     tbGuess.Value = tbGuess.Maximum;
 
-                // keep NumericUpDown synced with the max
+                // sync numRange to tbMax
                 if (numRange.Value != tbMax.Value)
                 {
-                    // clamp inside its allowed range first
-                    var v = Math.Max((int)numRange.Minimum, Math.Min((int)numRange.Maximum, tbMax.Value));
+                    int v = Math.Max((int)numRange.Minimum, Math.Min((int)numRange.Maximum, tbMax.Value));
                     numRange.Value = v;
                 }
 
@@ -129,7 +130,7 @@ namespace WindowsFormsApp4
                 }
 
                 // Update Max slider range/value and displays
-                tbMax.Maximum = Math.Max(tbMax.Maximum, newMax); // make sure we can set Value
+                tbMax.Maximum = Math.Max(tbMax.Maximum, newMax); // ensure we can set Value
                 tbMax.Value = newMax;
 
                 tbGuess.Maximum = newMax;
@@ -143,7 +144,9 @@ namespace WindowsFormsApp4
             // START
             btnStart.Click += (s, e) =>
             {
+                // lock range controls during the round
                 tbMin.Enabled = tbMax.Enabled = false;
+                numRange.Enabled = false;       // 🔒 lock NumericUpDown
                 tbGuess.Enabled = true;
                 btnGuess.Enabled = true;
                 btnStart.Enabled = false;
@@ -176,9 +179,13 @@ namespace WindowsFormsApp4
                     btnMessage.Text = $"Correct! Attempts: {attempts}";
                     btnMessage.BackColor = Color.SeaGreen;
 
+                    // end of round
                     tbGuess.Enabled = false;
                     btnGuess.Enabled = false;
+
+                    // unlock range controls for next round
                     tbMin.Enabled = tbMax.Enabled = true;
+                    numRange.Enabled = true;     // 🔓 unlock NumericUpDown
                     btnStart.Enabled = true;
                 }
             };

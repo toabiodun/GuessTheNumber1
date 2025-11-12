@@ -71,6 +71,7 @@ namespace WindowsFormsApp4
             this.tbMin.Name = "tbMin";
             this.tbMin.Size = new System.Drawing.Size(400, 56);
             this.tbMin.TabIndex = 2;
+            this.tbMin.TickStyle = System.Windows.Forms.TickStyle.Both;
             this.tbMin.Value = 1;
             // 
             // rtbMin
@@ -95,6 +96,7 @@ namespace WindowsFormsApp4
             this.tbMax.Name = "tbMax";
             this.tbMax.Size = new System.Drawing.Size(400, 56);
             this.tbMax.TabIndex = 4;
+            this.tbMax.TickStyle = System.Windows.Forms.TickStyle.Both;
             this.tbMax.Value = 2;
             // 
             // rtbMax
@@ -120,6 +122,7 @@ namespace WindowsFormsApp4
             this.tbGuess.Name = "tbGuess";
             this.tbGuess.Size = new System.Drawing.Size(400, 56);
             this.tbGuess.TabIndex = 6;
+            this.tbGuess.TickStyle = System.Windows.Forms.TickStyle.Both;
             this.tbGuess.Value = 1;
             // 
             // rtbGuess
